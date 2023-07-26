@@ -24,8 +24,17 @@ export class PairStatus {
     timestamp: number
 
     @Column()
-    reserve1: number
+    reserve0: string
 
     @Column()
-    reserve2: number
+    reserve1: string
+
+    @Column()
+    decimals0: number
+
+    @Column()
+    decimals1: number
+
+    @Column()
+    ratio: string
 }

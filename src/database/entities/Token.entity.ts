@@ -18,6 +18,6 @@ export class Token {
     address: string
 
     @Column()
-    decimal: number
+    decimals: number
 
 }

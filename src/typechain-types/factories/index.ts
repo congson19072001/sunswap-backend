@@ -7,3 +7,5 @@ export * as test from "./test";
 export { SunSwapERC20__factory } from "./SunSwapERC20__factory";
 export { SunSwapFactory__factory } from "./SunSwapFactory__factory";
 export { SunSwapPair__factory } from "./SunSwapPair__factory";
+export * as uniswap from "./@uniswap";
+export * as contracts from "./contracts";

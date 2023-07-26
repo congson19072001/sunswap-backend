@@ -5,16 +5,20 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import {
     Token,
     TokenPair,
-    PairStatus
+    PairStatus,
+    TokenStatus
 } from '../../database/entities';
+import { CommonModule } from '../common/common.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([
             Token,
             TokenPair,
-            PairStatus
-        ])
+            PairStatus,
+            TokenStatus
+        ]),
+        CommonModule
     ],
     providers: [CronJobService],
     controllers: [CronJobController],

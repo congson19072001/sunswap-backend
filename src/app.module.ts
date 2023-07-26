@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import {databaseConfig} from './config/database.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CommonModule } from './modules/common/common.module';
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot(databaseConfig),
     TransactionModule,
-    CronJobModule
+    CronJobModule,
+    CommonModule
   ],
   controllers: [AppController],
   providers: [AppService],

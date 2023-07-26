@@ -16,4 +16,16 @@ export class TokenPair {
 
     @Column()
     token1: string
+
+    @Column()
+    name0: string
+
+    @Column()
+    name1: string
+
+    @Column()
+    decimals0: number
+
+    @Column()
+    decimals1: number
 }

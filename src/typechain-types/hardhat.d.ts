@@ -104,6 +104,134 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.ERC20>;
 
+    getContractFactory(
+      name: "FixedPoint",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.FixedPoint__factory>;
+    getContractFactory(
+      name: "ISunswapMigrator",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ISunswapMigrator__factory>;
+    getContractFactory(
+      name: "ISunswapRouter01",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ISunswapRouter01__factory>;
+    getContractFactory(
+      name: "ISunswapRouter02",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ISunswapRouter02__factory>;
+    getContractFactory(
+      name: "IWETH",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IWETH__factory>;
+    getContractFactory(
+      name: "ISunswapV1Exchange",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ISunswapV1Exchange__factory>;
+    getContractFactory(
+      name: "ISunswapV1Factory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ISunswapV1Factory__factory>;
+    getContractFactory(
+      name: "Multicall",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Multicall__factory>;
+    getContractFactory(
+      name: "SunswapMigrator",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.SunswapMigrator__factory>;
+    getContractFactory(
+      name: "SunswapRouter01",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.SunswapRouter01__factory>;
+    getContractFactory(
+      name: "SunswapRouter02",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.SunswapRouter02__factory>;
+    getContractFactory(
+      name: "DeflatingERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.DeflatingERC20__factory>;
+    getContractFactory(
+      name: "RouterEventEmitter",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.RouterEventEmitter__factory>;
+    getContractFactory(
+      name: "WETH9",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.WETH9__factory>;
+
+    getContractAt(
+      name: "FixedPoint",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.FixedPoint>;
+    getContractAt(
+      name: "ISunswapMigrator",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ISunswapMigrator>;
+    getContractAt(
+      name: "ISunswapRouter01",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ISunswapRouter01>;
+    getContractAt(
+      name: "ISunswapRouter02",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ISunswapRouter02>;
+    getContractAt(
+      name: "IWETH",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IWETH>;
+    getContractAt(
+      name: "ISunswapV1Exchange",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ISunswapV1Exchange>;
+    getContractAt(
+      name: "ISunswapV1Factory",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ISunswapV1Factory>;
+    getContractAt(
+      name: "Multicall",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Multicall>;
+    getContractAt(
+      name: "SunswapMigrator",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.SunswapMigrator>;
+    getContractAt(
+      name: "SunswapRouter01",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.SunswapRouter01>;
+    getContractAt(
+      name: "SunswapRouter02",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.SunswapRouter02>;
+    getContractAt(
+      name: "DeflatingERC20",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.DeflatingERC20>;
+    getContractAt(
+      name: "RouterEventEmitter",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.RouterEventEmitter>;
+    getContractAt(
+      name: "WETH9",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.WETH9>;
+
     // default types
     getContractFactory(
       name: string,

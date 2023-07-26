@@ -2,7 +2,8 @@ import {DataSource, DataSourceOptions} from 'typeorm';
 import {
     Token,
     TokenPair,
-    PairStatus
+    PairStatus,
+    TokenStatus
 } from '../database/entities';
 
 
@@ -14,7 +15,8 @@ export const databaseConfig: DataSourceOptions = {
     entities: [
         Token,
         TokenPair,
-        PairStatus
+        PairStatus,
+        TokenStatus
     ],
     synchronize: true,
 };

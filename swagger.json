@@ -11,6 +11,63 @@
           }
         }
       }
+    },
+    "/transactions/history": {
+      "get": {
+        "operationId": "getPriceHistory",
+        "summary": "Get history of Price",
+        "tags": [
+          "transactions"
+        ],
+        "description": "Get history of Price",
+        "parameters": [
+          {
+            "name": "from-date",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to-date",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "network",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful"
+          }
+        }
+      }
     }
   },
   "info": {

@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Cron, CronExpression } from "@nestjs/schedule";
 import { providers, Wallet, BigNumber } from "ethers";
 import { 
     SunSwapFactory__factory, 
@@ -23,12 +22,25 @@ const logger = getLogger('CommonService');
 
 @Injectable()
 export class CommonService {
-    private bnbSigner: Wallet;
-    private polygonSigner: Wallet;
-    private bnbFactory: SunSwapFactory;
-    private polygonFactory: SunSwapFactory;
-    private bnbRouter: SunswapRouter02;
-    private polygonRouter: SunswapRouter02;
+    private signers: {
+        [network: number]: Wallet;
+    } = {};
+    private factories: {
+        [network: number]: SunSwapFactory;
+    } = {};
+    private routers: {
+        [network: number]: SunswapRouter02;
+    } = {};
+    private curPairs: {
+        [network: number]: {
+            [address: string]: SunSwapPair;
+        }
+    } = {};
+    private curTokens: {
+        [network: number]: {
+            [address: string]: SunSwapERC20;
+        }
+    } = {};
     constructor(
         @InjectRepository(TokenPair)
         private pairsRepository: MongoRepository<TokenPair>,
@@ -44,24 +56,24 @@ export class CommonService {
     ) { 
         // Initialize providers
         const bnbProvider = new providers.JsonRpcProvider(process.env.BSC_RPC);
-        this.bnbSigner = new Wallet(
+        this.signers[97] = new Wallet(
             `${process.env.PRIVATE_KEY}`,
             bnbProvider,
         );
-        const bnbFactoryFac: SunSwapFactory__factory = new SunSwapFactory__factory(this.bnbSigner);
-        this.bnbFactory = bnbFactoryFac.attach(bnbContract.SUNSWAP_FACTORY);
-        const bnbRouterFac: SunswapRouter02__factory = new SunswapRouter02__factory(this.bnbSigner);
-        this.bnbRouter = bnbRouterFac.attach(bnbContract.SUNSWAP_ROUTER);
+        const bnbFactoryFac: SunSwapFactory__factory = new SunSwapFactory__factory(this.signers[97]);
+        this.factories[97] = bnbFactoryFac.attach(bnbContract.SUNSWAP_FACTORY);
+        const bnbRouterFac: SunswapRouter02__factory = new SunswapRouter02__factory(this.signers[97]);
+        this.routers[97] = bnbRouterFac.attach(bnbContract.SUNSWAP_ROUTER);
 
         const polygonProvider = new providers.JsonRpcProvider(process.env.POLYGON_RPC);
-        this.polygonSigner = new Wallet(
+        this.signers[80001] = new Wallet(
             `${process.env.PRIVATE_KEY}`,
             polygonProvider,
         );    
-        const polygonFactoryFac: SunSwapFactory__factory = new SunSwapFactory__factory(this.polygonSigner);
-        this.polygonFactory = polygonFactoryFac.attach(polygonContract.SUNSWAP_FACTORY);
-        const polygonRouterFac: SunswapRouter02__factory = new SunswapRouter02__factory(this.polygonSigner);
-        this.polygonRouter = polygonRouterFac.attach(polygonContract.SUNSWAP_ROUTER);
+        const polygonFactoryFac: SunSwapFactory__factory = new SunSwapFactory__factory(this.signers[80001]);
+        this.factories[80001] = polygonFactoryFac.attach(polygonContract.SUNSWAP_FACTORY);
+        const polygonRouterFac: SunswapRouter02__factory = new SunswapRouter02__factory(this.signers[80001]);
+        this.routers[80001] = polygonRouterFac.attach(polygonContract.SUNSWAP_ROUTER);
     }
 
     async savePairStatus(network: number, address: string, token0: string, token1: string, reserve0: BigNumber, reserve1: BigNumber, decimals0: number, decimals1: number, timestamp: number) {
@@ -90,28 +102,19 @@ export class CommonService {
         await this.tokenStatusRepository.save(tokenStatus);
     }
 
-    async updatePairAndTokenList(network: number) {
-        let factory: SunSwapFactory;
-        let signer: Wallet;
-        switch (network) {
-            case 80001:
-                factory = this.polygonFactory;
-                signer = this.polygonSigner;
-                break;
-            case 97:
-                factory = this.bnbFactory;
-                signer = this.bnbSigner;
-                break;
-            default:
-                factory = this.polygonFactory;
-                signer = this.polygonSigner;
-                break;
+    async getPair(network: number, from: string, to: string) {
+        if(!this.factories[network]){
+            return null;
         }
+        return await this.factories[network].getPair(from, to);
+    }
+
+    async updatePairAndTokenList(network: number) {
         let fullyLoaded = false;
         let i = 0;
         while (!fullyLoaded) {
             try {
-                const pair = await factory.allPairs(i);
+                const pair = await this.factories[network].allPairs(i);
                 let existingPair = await this.pairsRepository.findOne({
                     where: {
                         network: network,
@@ -119,7 +122,7 @@ export class CommonService {
                     }
                 });
                 if(!existingPair) {
-                    existingPair = await this.createNewPairAndIncludedTokens(network, pair, signer);
+                    existingPair = await this.createNewPairAndIncludedTokens(network, pair);
                     logger.info(existingPair);
                 }
                 
@@ -130,39 +133,71 @@ export class CommonService {
         }
     }
 
-    async createNewPairAndIncludedTokens(network: number, pair: string, signer: Wallet) {
-        let newPair: TokenPair;
-        const pairFac: SunSwapPair__factory = new SunSwapPair__factory(signer);
-        const pairFactory: SunSwapPair = pairFac.attach(pair);
-        newPair = new TokenPair();
-        newPair.network = network;
-        newPair.address = pair;
-        newPair.token0 = await pairFactory.token0();
-        newPair.token1 = await pairFactory.token1();
-        const token0 = await this.createTokenFromAddressAndNetwork(newPair.token0, network);
-        const token1 = await this.createTokenFromAddressAndNetwork(newPair.token1, network);
-        newPair.name0 = token0.name;
-        newPair.name1 = token1.name;
-        newPair.decimals0 = token0.decimals;
-        newPair.decimals1 = token1.decimals;
-        await this.pairsRepository.save(newPair);
-        return newPair;
+    async getPairStatuses(pair: TokenPair) {
+        if(!this.curPairs[pair.network]){
+            this.curPairs[pair.network] = {};
+        }
+        let pairFactory: SunSwapPair = this.curPairs[pair.network][pair.address];
+        if(!pairFactory) {
+            const pairFac: SunSwapPair__factory = new SunSwapPair__factory(this.signers[pair.network]);
+            pairFactory = pairFac.attach(pair.address);
+            this.curPairs[pair.network][pair.address] = pairFactory;
+        }
+        try{
+            const reserves = await pairFactory.getReserves();
+            await this.savePairStatus(pair.network, pair.address, pair.token0, pair.token1, reserves._reserve0, reserves._reserve1, pair.decimals0, pair.decimals1, Math.floor(Date.now() / 1000));
+        } catch (error) {
+            logger.error(error);
+        }
     }
 
-    async createNewPairAndIncludedTokensNoSigner(network: number, pair: string) {
-        let signer: Wallet;
-        switch (network) {
-            case 80001:
-                signer = this.polygonSigner;
-                break;
-            case 97:
-                signer = this.bnbSigner;
-                break;
-            default:
-                signer = this.polygonSigner;
-                break;
+    async getTokenStatuses(token: Token) {
+        if(!this.curTokens[token.network]){
+            this.curTokens[token.network] = {};
         }
-        return await this.createNewPairAndIncludedTokens(network, pair, signer);
+        let tokenFactory: SunSwapERC20 = this.curTokens[token.network][token.address];
+        if(!tokenFactory) {
+            const tokenFac: SunSwapERC20__factory = new SunSwapERC20__factory(this.signers[token.network]);
+            tokenFactory = tokenFac.attach(token.address);
+            this.curTokens[token.network][token.address] = tokenFactory;
+        }
+        try{
+        const reserves = await tokenFactory.totalSupply();
+        await this.saveTokenStatus(token.network, token.address, reserves, Math.floor(Date.now() / 1000));
+        } catch (error) {
+            logger.error(error);
+        }
+    }
+
+    async createNewPairAndIncludedTokens(network: number, pair: string) {
+        let newPair: TokenPair;
+        if(!this.curPairs[network]){
+            this.curPairs[network] = {};
+        }
+        let pairFactory: SunSwapPair = this.curPairs[network][pair];
+        if(!pairFactory) {
+            const pairFac: SunSwapPair__factory = new SunSwapPair__factory(this.signers[network]);
+            pairFactory = pairFac.attach(pair);
+            this.curPairs[network][pair] = pairFactory;
+        }
+        try {     
+            newPair = new TokenPair();
+            newPair.network = network;
+            newPair.address = pair;
+            newPair.token0 = await pairFactory.token0();
+            newPair.token1 = await pairFactory.token1();
+            const token0 = await this.createTokenFromAddressAndNetwork(newPair.token0, network);
+            const token1 = await this.createTokenFromAddressAndNetwork(newPair.token1, network);
+            newPair.name0 = token0.name;
+            newPair.name1 = token1.name;
+            newPair.decimals0 = token0.decimals;
+            newPair.decimals1 = token1.decimals;
+            await this.pairsRepository.save(newPair);
+            return newPair;
+        } catch (error) {
+            logger.error(error);
+            return null;
+        }
     }
 
     /**
@@ -180,28 +215,28 @@ export class CommonService {
             }
         });
         if(!token) {
-            let signer: Wallet;
-            switch(network) {
-                case 80001:
-                    signer = this.polygonSigner;
-                    break;
-                case 97:
-                    signer = this.bnbSigner;
-                    break;
-                default:
-                    signer = this.polygonSigner;
-                    break;
+            if(!this.curTokens[network]){
+                this.curTokens[network] = {};
             }
-            const tokenFac: SunSwapERC20__factory = new SunSwapERC20__factory(signer);
-            const tokenFactory: SunSwapERC20 = tokenFac.attach(address);
-            const newToken = new Token();
-            newToken.network = network;
-            newToken.address = address;
-            newToken.symbol = await tokenFactory.symbol();
-            newToken.name = await tokenFactory.name();
-            newToken.decimals = await tokenFactory.decimals();
-            await this.tokensRepository.save(newToken);
-            return newToken;
+            let tokenFactory: SunSwapERC20 = this.curTokens[network][address];
+            if(!tokenFactory) {
+                const tokenFac: SunSwapERC20__factory = new SunSwapERC20__factory(this.signers[network]);
+                tokenFactory = tokenFac.attach(address);
+                this.curTokens[network][address] = tokenFactory;
+            }
+            try{
+                const newToken = new Token();
+                newToken.network = network;
+                newToken.address = address;
+                newToken.symbol = await tokenFactory.symbol();
+                newToken.name = await tokenFactory.name();
+                newToken.decimals = await tokenFactory.decimals();
+                await this.tokensRepository.save(newToken);
+                return newToken;
+            } catch (error) {
+                logger.error(error);
+                return null;
+            }
         }
         return token;
     }

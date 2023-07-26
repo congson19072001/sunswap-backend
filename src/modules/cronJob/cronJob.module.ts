@@ -5,8 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import {
     Token,
     TokenPair,
-    PairStatus,
-    TokenStatus
 } from '../../database/entities';
 import { CommonModule } from '../common/common.module';
 
@@ -15,8 +13,6 @@ import { CommonModule } from '../common/common.module';
         TypeOrmModule.forFeature([
             Token,
             TokenPair,
-            PairStatus,
-            TokenStatus
         ]),
         CommonModule
     ],

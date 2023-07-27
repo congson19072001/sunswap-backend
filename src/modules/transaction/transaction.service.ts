@@ -32,8 +32,8 @@ export class TransactionService {
     ): Promise<PriceHistoryResponse> {
         network = Number(network);
         const isReverse = from > to;
-        const fromSecond = Math.floor((new Date(fromDate)).getTime() / 1000);
-        const toSecond = Math.floor((new Date(toDate)).getTime() / 1000);
+        const fromSecond = Math.floor((new Date(fromDate)).getTime());
+        const toSecond = Math.floor((new Date(toDate)).getTime());
         let existingPair = await this.pairsRepository.findOne({
             where: {
                 token0: isReverse ? to : from,

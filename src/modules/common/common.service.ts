@@ -145,7 +145,7 @@ export class CommonService {
         }
         try{
             const reserves = await pairFactory.getReserves();
-            await this.savePairStatus(pair.network, pair.address, pair.token0, pair.token1, reserves._reserve0, reserves._reserve1, pair.decimals0, pair.decimals1, Math.floor(Date.now() / 1000));
+            await this.savePairStatus(pair.network, pair.address, pair.token0, pair.token1, reserves._reserve0, reserves._reserve1, pair.decimals0, pair.decimals1, Math.floor(Date.now()));
         } catch (error) {
             logger.error(error);
         }
@@ -163,7 +163,7 @@ export class CommonService {
         }
         try{
         const reserves = await tokenFactory.totalSupply();
-        await this.saveTokenStatus(token.network, token.address, reserves, Math.floor(Date.now() / 1000));
+        await this.saveTokenStatus(token.network, token.address, reserves, Math.floor(Date.now()));
         } catch (error) {
             logger.error(error);
         }

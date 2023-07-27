@@ -61,6 +61,9 @@ export class TransactionService {
                     $gte: Number(fromSecond), 
                     $lte: Number(toSecond)
                 }
+            },
+            order: {
+                timestamp: 'ASC'
             }
         });
         const result = isReverse ? {
